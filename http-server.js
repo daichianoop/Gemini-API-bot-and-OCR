@@ -3,6 +3,9 @@ import http from "http";
 import path from "path";
 import url from "url";
 
+// Define the root directory for serving files
+const ROOT = path.resolve(__dirname, 'public');
+
 // Local port for http server to listen on
 const PORT = 9000;
 
@@ -33,9 +36,13 @@ http
     // Extract URL path
     // Avoid https://en.wikipedia.org/wiki/Directory_traversal_attack
     let sanitizedPath = path
-      .normalize(parsedUrl.pathname)
-      .replace(/^(\.\.[\/\\])+/, "")
-      .substring(1);
+      .normalize(parsedUrl.pathname);
+    const resolvedPath = path.resolve(ROOT, sanitizedPath);
+    if (!resolvedPath.startsWith(ROOT)) {
+      res.statusCode = 403;
+      res.end("Access denied");
+      return;
+    }
 
     if (sanitizedPath === "API_KEY") {
       res.end(API_KEY);
